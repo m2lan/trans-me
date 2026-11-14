@@ -62,6 +62,9 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -71,14 +74,13 @@ jobs:
       - name: 检查产物
         run: ls -lh artifacts
 
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/*
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-          body: |
-            下载对应平台的安装包：macOS 选 `.dmg`（Intel 用 x64，Apple Silicon 用 arm64），Windows 选 `setup.exe`。
+      # 已有 Release 时只补/覆盖资产，保留人工写的发布说明
+      - name: 创建或补全 Release
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release $TAG 已存在，追加资产"
+          else
+            gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "$TAG" --generate-notes
+          fi
+          gh release upload "$TAG" artifacts/* --repo "$GITHUB_REPOSITORY" --clobber
 
-            macOS 版本未做 Apple 公证，首次打开如提示「无法验证开发者」，请右键 → 打开。
-            首次使用截图翻译需要在「系统设置 → 隐私与安全性 → 屏幕录制」里授权，并重启应用。
