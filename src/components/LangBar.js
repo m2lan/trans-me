@@ -5,7 +5,8 @@ export default defineComponent({
   props: {
     source: { type: String, default: 'auto' },
     target: { type: String, default: 'zh-CN' },
-    langs: { type: Array, default: () => [] }
+    langs: { type: Array, default: () => [] },
+    extra: { type: Boolean, default: false }
   },
   emits: ['update:source', 'update:target', 'swap'],
   setup(props, { emit }) {
@@ -34,7 +35,9 @@ export default defineComponent({
       </select>
     </div>
 
-    <div class="langbar-divider"></div>
-    <slot></slot>
+    <template v-if="extra">
+      <div class="langbar-divider"></div>
+      <slot></slot>
+    </template>
   </div>`
 })

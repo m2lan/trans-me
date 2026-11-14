@@ -342,6 +342,7 @@ export default defineComponent({
 
     <LangBar
       v-show="tab !== 'history'"
+      :extra="tab === 'translate' && !!(detectedLabel || result.provider)"
       :source="settings.source"
       :target="settings.target"
       :langs="LANGS"

@@ -99,6 +99,13 @@ const SAMPLE = 'Screenshot translation beats opening a web page every single tim
     .toString('base64')}`
   await page.eval(`document.querySelectorAll('.tab')[1].click()`)
   await sleep(300)
+  // 若上一轮留有图片，先点「换一张」回到空状态
+  await page.eval(`(() => {
+    const b = [...document.querySelectorAll('.side-foot button')].find(x => x.textContent.includes('换一张'))
+    if (b) b.click()
+    return !!b
+  })()`)
+  await sleep(400)
   await page.shot('ui-image-empty.png')
   await page.eval(`window.api.imageDebugOpen(${JSON.stringify(dataUrl)})`)
   // 等识别 + 翻译全部结束（没有遮罩即完成）
@@ -118,9 +125,17 @@ const SAMPLE = 'Screenshot translation beats opening a web page every single tim
   await sleep(500)
   await page.shot('ui-history.png')
 
-  /* 4. 设置 */
+  /* 4. 设置（临时把窗口放大一点，避免设置面板被裁） */
+  // 用设备尺寸模拟把视口临时放大（Browser.setWindowBounds 在页面目标里不可用）
+  await page.send('Emulation.setDeviceMetricsOverride', {
+    width: 1000,
+    height: 880,
+    deviceScaleFactor: 1,
+    mobile: false
+  })
+  await sleep(300)
   await page.eval(`document.querySelector('.titlebar .icon-btn').click()`)
-  await sleep(500)
+  await sleep(600)
   await page.shot('ui-settings.png')
   await page.eval(`(() => {
     const t = [...document.querySelectorAll('.section-title')].find(x => x.textContent.includes('截图识别'))
@@ -129,6 +144,7 @@ const SAMPLE = 'Screenshot translation beats opening a web page every single tim
   })()`)
   await sleep(400)
   await page.shot('ui-settings-ocr.png')
+  await page.send('Emulation.clearDeviceMetricsOverride')
 
   await page.eval(`window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`)
   page.close()
