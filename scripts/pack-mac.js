@@ -153,6 +153,8 @@ function buildBundle() {
   copyDir(path.join(ROOT, 'dist'), path.join(appDir, 'dist'))
   copyDir(path.join(ROOT, 'electron'), path.join(appDir, 'electron'))
   copyDir(path.join(ROOT, 'native'), path.join(appDir, 'native'))
+  // 托盘 / 菜单栏图标（build/ 里还有 app 图标，一并带上）
+  copyDir(path.join(ROOT, 'build'), path.join(appDir, 'build'))
 
   // 精简 package.json：只要主进程加载所需的元信息，不带 devDependencies
   const runtimePkg = {

@@ -53,6 +53,19 @@ contextBridge.exposeInMainWorld('api', {
   resizePopup: (height) => ipcRenderer.send('popup:resize', height),
   closePopup: () => ipcRenderer.send('popup:close'),
 
+  // 菜单栏小面板
+  tray: {
+    hide: () => ipcRenderer.send('tray:hide'),
+    // 仅开发期：从页面直接叫出小面板，方便本地验证
+    ...(process.env.NODE_ENV === 'development'
+      ? { show: () => ipcRenderer.send('tray:debug-show') }
+      : {}),
+    resize: (height) => ipcRenderer.send('tray:resize', height),
+    openMain: () => ipcRenderer.send('tray:open-main'),
+    onShown: subscribe('tray:shown')
+  },
+  onOpenSettings: subscribe('app:open-settings'),
+
   window: {
     minimize: () => ipcRenderer.send('window:minimize'),
     maximize: () => ipcRenderer.send('window:maximize'),

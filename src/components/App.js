@@ -238,6 +238,7 @@ export default defineComponent({
         imageRequest.value = { ...payload, nonce: Date.now() }
       })
       window.api.onHistoryUpdated(() => refreshState())
+      if (window.api.onOpenSettings) window.api.onOpenSettings(() => (showSettings.value = true))
       window.addEventListener('keydown', onKeydown)
       await nextTick()
       if (editorRef.value) editorRef.value.focus()

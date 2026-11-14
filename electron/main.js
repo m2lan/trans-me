@@ -10,7 +10,10 @@ const {
   clipboard,
   shell,
   systemPreferences,
-  dialog
+  dialog,
+  Tray,
+  Menu,
+  nativeImage
 } = require('electron')
 const path = require('node:path')
 const fs = require('node:fs')
@@ -34,6 +37,8 @@ const HOTKEYS = {
 let mainWindow = null
 let overlayWindow = null
 let popupWindow = null
+let tray = null
+let trayWindow = null
 let capture = null // 当前截图上下文
 let pending = { from: 'auto', to: 'zh-CN' } // 本次截图翻译的语言方向
 let popupReadyAt = 0
@@ -82,7 +87,8 @@ function createMainWindow() {
   })
 
   mainWindow.on('close', (e) => {
-    if (process.platform === 'darwin' && !app.isQuitting) {
+    // 关窗只是收起来，应用继续驻留在菜单栏 / 托盘
+    if (!app.isQuitting) {
       e.preventDefault()
       mainWindow.hide()
     }
@@ -106,6 +112,134 @@ function toggleMainWindow() {
   } else {
     showMainWindow()
   }
+}
+
+/* --------------------------- 菜单栏图标 / 小面板 -------------------------- */
+
+const assetPath = (...segs) => path.join(__dirname, '..', 'build', ...segs)
+
+function createTray() {
+  if (tray) return
+  const mac = process.platform === 'darwin'
+  let icon = nativeImage.createFromPath(assetPath(mac ? 'trayTemplate.png' : 'tray-win.png'))
+  if (icon.isEmpty()) {
+    console.warn('[tray] 图标缺失，使用空白图标')
+    icon = nativeImage.createEmpty()
+  } else if (mac) {
+    icon.setTemplateImage(true) // 让系统按亮/暗色菜单栏自动反色
+  }
+
+  tray = new Tray(icon)
+  tray.setToolTip('TransMe · 点一下输入翻译')
+  tray.on('click', () => {
+    if (trayWindow && trayWindow.isVisible()) hideTrayWindow()
+    else showTrayWindow()
+  })
+  tray.on('right-click', () => {
+    if (tray) tray.popUpContextMenu(buildTrayMenu())
+  })
+}
+
+function buildTrayMenu() {
+  return Menu.buildFromTemplate([
+    { label: '输入翻译…', click: () => showTrayWindow() },
+    { label: '打开主界面', click: () => showMainWindow() },
+    { label: '截图翻译', click: () => startScreenshot() },
+    { type: 'separator' },
+    { label: '打开设置', click: () => openMainSettings() },
+    { type: 'separator' },
+    { label: `TransMe ${app.getVersion()}`, enabled: false },
+    {
+      label: '退出 TransMe',
+      click: () => {
+        app.isQuitting = true
+        app.quit()
+      }
+    }
+  ])
+}
+
+function createTrayWindow() {
+  const mac = process.platform === 'darwin'
+  trayWindow = new BrowserWindow({
+    width: 400,
+    height: 260,
+    show: false,
+    frame: false,
+    transparent: mac,
+    backgroundColor: mac ? '#00000000' : '#ffffff',
+    resizable: false,
+    movable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    hasShadow: false,
+    webPreferences: {
+      preload: PRELOAD,
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  })
+
+  trayWindow.setAlwaysOnTop(true, 'pop-up-menu')
+  if (mac) trayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+
+  loadView(trayWindow, 'tray.html')
+
+  trayWindow.on('blur', () => {
+    if (!trayWindow || trayWindow.isDestroyed()) return
+    if (trayWindow.webContents.isDevToolsOpened()) return
+    trayWindow.hide()
+  })
+
+  trayWindow.on('closed', () => {
+    trayWindow = null
+  })
+}
+
+/** 贴着菜单栏图标居中放下，并夹在当前显示器可视区域内（多屏也适用） */
+function positionTrayWindow() {
+  if (!tray || !trayWindow) return
+  const b = tray.getBounds()
+  const { width } = trayWindow.getBounds()
+  const { height } = trayWindow.getBounds()
+  const display = screen.getDisplayNearestPoint({ x: Math.round(b.x), y: Math.round(b.y) })
+  const area = display.workArea
+
+  let x = Math.round(b.x + b.width / 2 - width / 2)
+  let y = Math.round(b.y + b.height + 4)
+
+  x = Math.min(Math.max(x, area.x + 6), area.x + area.width - width - 6)
+  if (y + height > area.y + area.height - 6) y = area.y + area.height - height - 6
+  if (y < area.y + 4) y = area.y + 4
+
+  trayWindow.setBounds({ x, y, width, height })
+}
+
+function showTrayWindow() {
+  if (!trayWindow || trayWindow.isDestroyed()) createTrayWindow()
+  positionTrayWindow()
+  trayWindow.show()
+  trayWindow.focus()
+  send(trayWindow, 'tray:shown')
+}
+
+function hideTrayWindow() {
+  if (trayWindow && !trayWindow.isDestroyed()) trayWindow.hide()
+}
+
+function openMainSettings() {
+  showMainWindow()
+  const push = (attempt = 0) => {
+    if (mainWindow && mainWindow.webContents && !mainWindow.webContents.isLoading()) {
+      send(mainWindow, 'app:open-settings')
+    } else if (attempt < 20) {
+      setTimeout(() => push(attempt + 1), 120)
+    }
+  }
+  push()
 }
 
 /* ------------------------------ 截图遮罩层 ------------------------------ */
@@ -630,15 +764,26 @@ function registerIpc() {
   })
   ipcMain.on('popup:close', () => closePopup())
 
+  /* ------------------------ 菜单栏小面板 IPC ------------------------ */
+
+  ipcMain.on('tray:hide', () => hideTrayWindow())
+  if (isDev) ipcMain.on('tray:debug-show', () => showTrayWindow())
+  ipcMain.on('tray:open-main', () => showMainWindow())
+  ipcMain.on('tray:resize', (_e, h) => {
+    if (!trayWindow || trayWindow.isDestroyed()) return
+    const b = trayWindow.getBounds()
+    const display = screen.getDisplayMatching(b)
+    const room = Math.max(160, display.workArea.y + display.workArea.height - b.y - 8)
+    const height = Math.max(120, Math.min(Math.round(h), Math.min(620, room)))
+    trayWindow.setBounds({ x: b.x, y: b.y, width: b.width, height })
+  })
+
   ipcMain.on('window:minimize', () => mainWindow?.minimize())
   ipcMain.on('window:maximize', () => {
     if (!mainWindow) return
     mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize()
   })
-  ipcMain.on('window:close', () => {
-    if (process.platform === 'darwin') mainWindow?.hide()
-    else app.quit()
-  })
+  ipcMain.on('window:close', () => mainWindow?.hide())
   ipcMain.on('window:hide', () => mainWindow?.hide())
 
   ipcMain.handle('app:open-external', (_e, url) => shell.openExternal(url))
@@ -695,6 +840,8 @@ if (!gotLock) {
     if (process.platform === 'win32') app.setAppUserModelId('com.transme.app')
     registerIpc()
     createMainWindow()
+    createTray()
+    createTrayWindow()
     registerHotkeys()
 
     app.on('activate', () => {
@@ -703,9 +850,8 @@ if (!gotLock) {
     })
   })
 
-  app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
-  })
+  // 有菜单栏图标驻留，关掉所有窗口也继续活着（退出走托盘菜单）
+  app.on('window-all-closed', () => {})
 
   app.on('before-quit', () => {
     app.isQuitting = true
@@ -714,5 +860,10 @@ if (!gotLock) {
   app.on('will-quit', () => {
     globalShortcut.unregisterAll()
     tts.stop()
+    if (tray) {
+      tray.destroy()
+      tray = null
+    }
+    if (trayWindow && !trayWindow.isDestroyed()) trayWindow.destroy()
   })
 }

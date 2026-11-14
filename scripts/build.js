@@ -11,7 +11,7 @@ const src = path.join(root, 'src')
 const dist = path.join(root, 'dist')
 const assets = path.join(dist, 'assets')
 
-const STATIC = ['index.html', 'overlay.html', 'popup.html', 'styles.css', 'overlay.css', 'popup.css']
+const STATIC = ['index.html', 'overlay.html', 'popup.html', 'tray.html', 'styles.css', 'overlay.css', 'popup.css', 'tray.css']
 
 async function build() {
   let esbuild
@@ -28,7 +28,8 @@ async function build() {
     entryPoints: {
       app: path.join(src, 'main.js'),
       overlay: path.join(src, 'overlay.js'),
-      popup: path.join(src, 'popup.js')
+      popup: path.join(src, 'popup.js'),
+      tray: path.join(src, 'tray.js')
     },
     bundle: true,
     outdir: assets,

@@ -2,6 +2,21 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.3.0] - 2026-11-15
+
+### 新增
+
+- **菜单栏入口**：macOS 菜单栏常驻「文A」图标（Windows 为任务栏托盘），点一下弹出小面板，输入即译，`Esc` 收起
+- 小面板贴图标定位、出现在点击的那块屏幕，全屏应用上也可见；弹出即聚焦输入框，回车立即翻译
+- 面板内可直接切语言、复制、朗读、进截图翻译，或「打开主界面」
+- 托盘右键菜单：输入翻译 / 打开主界面 / 截图翻译 / 打开设置 / 退出
+- 关闭主窗口改为收起到菜单栏（原先 macOS 也会隐藏，但 Windows 会直接退出），退出统一走托盘菜单
+
+### 变更
+
+- 主窗口的「设置」可由托盘直接唤起
+- 打包配置带上 `build/`（菜单栏图标资源），`npm run tray-icon` 可重新生成
+
 ## [1.2.0] - 2026-11-14
 
 ### 新增
@@ -53,6 +68,7 @@
 - 全局快捷键、托盘、深色界面、设置面板
 - macOS 打包流程与 dmg 产物
 
+[1.3.0]: https://github.com/m2lan/trans-me/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/m2lan/trans-me/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/m2lan/trans-me/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/m2lan/trans-me/releases/tag/v1.0.0
