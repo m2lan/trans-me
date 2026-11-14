@@ -29,11 +29,42 @@ function parsePayload(stdout) {
     throw new Error('OCR 输出解析失败')
   }
   if (payload.error) throw new Error(payload.error)
-  const lines = Array.isArray(payload.lines) ? payload.lines : []
-  const texts = lines
-    .map((l) => (typeof l === 'string' ? l : String(l.text || '')).trim())
-    .filter(Boolean)
-  return { text: payload.text ? String(payload.text).trim() : texts.join('\n'), lines }
+
+  const source = Array.isArray(payload.lines) ? payload.lines : []
+  const lines = source.map((l) => (typeof l === 'string' ? { text: l } : l || {}))
+
+  // 归一化文字框（0~1，左上角原点）；有的平台给像素坐标，按图片尺寸折算
+  const imgW = Number(payload.width) || 0
+  const imgH = Number(payload.height) || 0
+  const normalizeBox = (box) => {
+    if (!box || typeof box !== 'object') return null
+    let { x, y, w, h } = box
+    if ([x, y, w, h].some((v) => typeof v !== 'number' || !Number.isFinite(v))) return null
+    // 像素坐标：x 超出 1 且已知图片宽度
+    if (x > 1 && imgW > 0) {
+      x /= imgW
+      w /= imgW
+    }
+    if (y > 1 && imgH > 0) {
+      y /= imgH
+      h /= imgH
+    }
+    if (w <= 0 || h <= 0) return null
+    const clamp = (v) => Math.min(1, Math.max(0, v))
+    return {
+      x: clamp(x),
+      y: clamp(y),
+      w: clamp(Math.min(w, 1 - clamp(x))),
+      h: clamp(Math.min(h, 1 - clamp(y)))
+    }
+  }
+
+  const segments = lines
+    .map((l) => ({ text: String(l.text || '').trim(), box: normalizeBox(l.box) }))
+    .filter((l) => l.text)
+
+  const text = payload.text ? String(payload.text).trim() : segments.map((l) => l.text).join('\n')
+  return { text, lines, segments, imageSize: { width: imgW, height: imgH } }
 }
 
 /* ------------------------------- macOS -------------------------------- */
@@ -112,6 +143,50 @@ function stripOcrMarkers(input) {
     .trim()
 }
 
+/**
+ * 从带版面标记的 OCR 文本里拆出「文字 + 位置框」。
+ * 标记形如：<｜ref｜>标题<｜/ref｜><｜box｜>[[52, 40, 948, 96]]<｜/box｜>
+ * 坐标是 0~1000 的归一化值，换算成 0~1 供前端叠加译文。
+ */
+function parseCloudSegments(rawText) {
+  const raw = String(rawText || '')
+  const segments = []
+  const re = /<｜ref｜>([\s\S]*?)<｜\/ref｜>\s*<｜box｜>\s*\[\[([^\]]+)\]\]\s*<｜\/box｜>/g
+  let m
+  while ((m = re.exec(raw))) {
+    const text = stripOcrMarkers(m[1])
+    if (!text) continue
+    const nums = m[2].split(',').map((v) => Number(String(v).trim()))
+    let box = null
+    if (nums.length >= 4 && nums.every((n) => Number.isFinite(n))) {
+      const [x1, y1, x2, y2] = nums
+      // 0~1000 归一化（也可能直接是 0~1）
+      const unit = Math.max(x2, y2) > 1.5 ? 1000 : 1
+      const x = x1 / unit
+      const y = y1 / unit
+      const w = (x2 - x1) / unit
+      const h = (y2 - y1) / unit
+      if (x >= -0.02 && y >= -0.02 && w > 0 && h > 0 && x < 1 && y < 1) {
+        box = {
+          x: Math.min(1, Math.max(0, x)),
+          y: Math.min(1, Math.max(0, y)),
+          w: Math.min(0.98, w),
+          h: Math.min(0.98, h)
+        }
+      }
+    }
+    segments.push({ text, box })
+  }
+  if (segments.length) return segments
+
+  // 没有标记（例如 text_recognition 模式只回纯文本）就按行拆，不带位置框
+  return stripOcrMarkers(raw)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((text) => ({ text, box: null }))
+}
+
 const MIME_BY_EXT = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -174,9 +249,11 @@ async function recognizeCloud(filePath, { baseUrl, apiKey, purpose = 'text_recog
   if (!res.ok) throw new Error(`云端 OCR HTTP ${res.status}：${raw.slice(0, 160)}`)
 
   const pages = Array.isArray(data.pages) ? data.pages : []
-  const text = stripOcrMarkers(pages.map((p) => p.text || '').join('\n'))
+  const joined = pages.map((p) => p.text || '').join('\n')
+  const text = stripOcrMarkers(joined)
   return {
     text,
+    segments: parseCloudSegments(joined),
     pages: pages.length,
     truncated: pages.some((p) => p.finish_reason === 'length'),
     engine: 'DeepSeek OCR'
@@ -205,6 +282,7 @@ module.exports = {
   recognizeCloud,
   cloudOcrAvailable,
   stripOcrMarkers,
+  parseCloudSegments,
   ocrEndpoint,
   unpacked
 }

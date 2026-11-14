@@ -29,6 +29,14 @@ contextBridge.exposeInMainWorld('api', {
   onPrefill: subscribe('app:prefill'),
   onHistoryUpdated: subscribe('app:history-updated'),
 
+  // 图片翻译（拖图 / 上传 / 粘贴）
+  pickImage: () => ipcRenderer.invoke('image:pick'),
+  pasteImage: () => ipcRenderer.invoke('image:paste'),
+  translateImage: (payload) => ipcRenderer.invoke('image:translate', payload),
+  onImageProgress: subscribe('image:progress'),
+  onOpenImage: subscribe('app:open-image'),
+  openImageInMain: (payload) => ipcRenderer.send('image:open-in-main', payload),
+
   // 截图遮罩层
   testEngine: (payload) => ipcRenderer.invoke('app:test-engine', payload),
 

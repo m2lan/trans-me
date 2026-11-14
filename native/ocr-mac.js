@@ -1,6 +1,7 @@
 // macOS 原生 OCR（Vision 框架）— 通过 JXA ObjC 桥接调用，无需编译
 // 用法: osascript -l JavaScript ocr-mac.js <图片路径>
-// 输出: {"lines":["..."],"text":"..."} 或 {"error":"..."}
+// 输出: {"lines":[{"text":"...","box":{x,y,w,h}}],"text":"...","width":..,"height":..}
+//       box 为归一化坐标（0~1），原点在左上角，用于把译文叠回原图位置
 
 ObjC.import('Vision')
 ObjC.import('AppKit')
@@ -42,6 +43,9 @@ function recognize(path) {
   var cgImage = rep.CGImage
   if (!cgImage) return { error: '图片格式不受支持' }
 
+  var width = rep.pixelsWide
+  var height = rep.pixelsHigh
+
   var handler = $.VNImageRequestHandler.alloc.initWithCGImageOptions(cgImage, $())
   var request = $.VNRecognizeTextRequest.alloc.init
   request.recognitionLevel = 0 // VNRequestTextRecognitionLevelAccurate
@@ -64,13 +68,27 @@ function recognize(path) {
     for (var i = 0; i < count; i++) {
       var obs = results.objectAtIndex(i)
       var candidates = obs.topCandidates(1)
-      if (candidates && candidates.count > 0) {
-        var text = ObjC.unwrap(candidates.firstObject.string)
-        if (text && text.trim().length) lines.push(text)
+      if (!candidates || candidates.count === 0) continue
+      var text = ObjC.unwrap(candidates.firstObject.string)
+      if (!text || !text.trim().length) continue
+
+      // Vision 的 boundingBox 是归一化坐标，原点在左下角；转成左上角原点
+      var bb = obs.boundingBox
+      var box = null
+      try {
+        box = {
+          x: bb.origin.x,
+          y: 1 - (bb.origin.y + bb.size.height),
+          w: bb.size.width,
+          h: bb.size.height
+        }
+      } catch (e) {
+        box = null
       }
+      lines.push({ text: text, box: box })
     }
   }
-  return { lines: lines, text: lines.join('\n') }
+  return { lines: lines, text: lines.map(function (l) { return l.text }).join('\n'), width: width, height: height }
 }
 
 function run(argv) {

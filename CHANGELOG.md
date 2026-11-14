@@ -2,6 +2,22 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.2.0] - 2026-11-14
+
+### 新增
+
+- **图片翻译**：「图片」页支持**拖放 / ⌘V 粘贴 / 选择文件**，不再需要先截图再框选
+- 译文**叠加回原图位置**：OCR 返回每行的文字框，译文按框铺白底覆盖原文，字号自动收缩避免裁切
+- 右侧逐行对照列表，点任意一行可复制该行译文；可一键关闭叠加只看原图
+- 截图结果浮窗新增「大图」，把刚截的图带进图片翻译页继续对照
+- `electron/image.js`：图片 → OCR 分段 → 逐行翻译的完整流水线
+- macOS Vision / Windows WinRT 的 OCR 现在都返回文字位置框
+
+### 变更
+
+- 图片翻译的行数对不上时自动逐行重翻（并发 4），保证译文与原文行一一对应
+- 无障碍/易用性：图片页空状态提示支持的格式与 `⌘V` 粘贴
+
 ## [1.1.0] - 2026-11-14
 
 ### 新增
@@ -37,5 +53,6 @@
 - 全局快捷键、托盘、深色界面、设置面板
 - macOS 打包流程与 dmg 产物
 
+[1.2.0]: https://github.com/m2lan/trans-me/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/m2lan/trans-me/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/m2lan/trans-me/releases/tag/v1.0.0

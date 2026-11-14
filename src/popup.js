@@ -4,6 +4,7 @@ const LANG_NAME = { 'zh-CN': '中文', en: 'English', ja: '日本語', ko: '한�
 
 let state = {
   image: '',
+  from: 'auto',
   to: 'zh-CN',
   status: '正在识别文字…',
   original: '',
@@ -72,6 +73,10 @@ function render() {
           <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.2h2.2L8.6 3.6v8.8L5.2 9.8H3z"/><path d="M11 5.6a3.2 3.2 0 010 4.8"/></svg>
           朗读
         </button>
+        <button data-act="open" title="在主窗口里查看大图与逐行对照">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5H13.5V6.5"/><path d="M13 3L8.5 7.5"/><path d="M12.5 10v2.5a1 1 0 01-1 1H3.5a1 1 0 01-1-1V4.5a1 1 0 011-1H6"/></svg>
+          大图
+        </button>
         <span class="meta">${esc(state.engine)}${state.elapsed ? ` · ${(state.elapsed / 1000).toFixed(1)}s` : ''}</span>
       </div>`
   } else {
@@ -110,6 +115,10 @@ wrapEl.addEventListener('click', async (e) => {
     setTimeout(() => (btn.lastChild.textContent = ' 复制'), 1200)
   }
   if (act === 'speak') api.speak({ text: state.translated, lang: state.to })
+  if (act === 'open') {
+    api.openImageInMain({ dataUrl: state.image, from: state.from, to: state.to })
+    api.closePopup()
+  }
 })
 
 wrapEl.addEventListener('toggle', () => fit(), true)
@@ -130,6 +139,7 @@ if (api?.onPopupInit) {
     state = {
       ...state,
       image: payload.image || '',
+      from: payload.from || 'auto',
       to: payload.to || 'zh-CN',
       status: '正在识别文字…',
       error: '',

@@ -2,6 +2,7 @@ import { defineComponent, ref, computed, watch, onMounted, onBeforeUnmount, next
 import LangBar from './LangBar.js'
 import HistoryPanel from './HistoryPanel.js'
 import SettingsModal from './SettingsModal.js'
+import ImagePane from './ImagePane.js'
 
 const LANGS = [
   { code: 'auto', label: '自动检测' },
@@ -14,7 +15,7 @@ const LANGS = [
 
 export default defineComponent({
   name: 'App',
-  components: { LangBar, HistoryPanel, SettingsModal },
+  components: { LangBar, HistoryPanel, SettingsModal, ImagePane },
   setup() {
     const isMac = window.api.platform === 'darwin'
 
@@ -39,6 +40,7 @@ export default defineComponent({
     const toast = ref('')
     const showSettings = ref(false)
     const editorRef = ref(null)
+    const imageRequest = ref(null)
 
     let seq = 0
     let debounceTimer = null
@@ -230,6 +232,11 @@ export default defineComponent({
         input.value = payload.text
         if (payload.auto) nextTick(runTranslate)
       })
+      // 截图浮窗「在图片翻译中打开」
+      window.api.onOpenImage((payload) => {
+        tab.value = 'image'
+        imageRequest.value = { ...payload, nonce: Date.now() }
+      })
       window.api.onHistoryUpdated(() => refreshState())
       window.addEventListener('keydown', onKeydown)
       await nextTick()
@@ -264,8 +271,10 @@ export default defineComponent({
       loading,
       error,
       toast,
+      showToast,
       showSettings,
       editorRef,
+      imageRequest,
       detectedLabel,
       canTranslate,
       langLabel,
@@ -296,6 +305,7 @@ export default defineComponent({
 
       <div class="tabs">
         <button class="tab" :class="{ active: tab === 'translate' }" @click="tab = 'translate'">翻译</button>
+        <button class="tab" :class="{ active: tab === 'image' }" @click="tab = 'image'">图片</button>
         <button class="tab" :class="{ active: tab === 'history' }" @click="tab = 'history'">历史</button>
       </div>
 
@@ -329,20 +339,20 @@ export default defineComponent({
       </div>
     </header>
 
-    <template v-if="tab === 'translate'">
-      <LangBar
-        :source="settings.source"
-        :target="settings.target"
-        :langs="LANGS"
-        @update:source="onSource"
-        @update:target="onTarget"
-        @swap="swap"
-      >
-        <span v-if="detectedLabel" class="badge">识别为 {{ detectedLabel }}</span>
-        <span v-if="result.provider" class="badge ok">{{ result.provider }}</span>
-      </LangBar>
+    <LangBar
+      v-show="tab !== 'history'"
+      :source="settings.source"
+      :target="settings.target"
+      :langs="LANGS"
+      @update:source="onSource"
+      @update:target="onTarget"
+      @swap="swap"
+    >
+      <span v-if="tab === 'translate' && detectedLabel" class="badge">识别为 {{ detectedLabel }}</span>
+      <span v-if="tab === 'translate' && result.provider" class="badge ok">{{ result.provider }}</span>
+    </LangBar>
 
-      <div class="workspace">
+    <div v-show="tab === 'translate'" class="workspace">
         <section class="pane">
           <div class="pane-head">
             <span class="label">{{ settings.source === 'auto' ? '原文' : langLabel(settings.source) }}</span>
@@ -431,10 +441,18 @@ export default defineComponent({
           </div>
         </section>
       </div>
-    </template>
+
+      <ImagePane
+        v-show="tab === 'image'"
+        :settings="settings"
+        :is-mac="isMac"
+        :request="imageRequest"
+        @toast="showToast"
+        @activate="tab = 'image'"
+      />
 
     <HistoryPanel
-      v-else
+      v-show="tab === 'history'"
       :items="history"
       :favorites="favorites"
       @select="loadHistoryItem"

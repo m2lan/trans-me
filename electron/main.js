@@ -19,6 +19,7 @@ const os = require('node:os')
 const store = require('./store')
 const { translateText, translateImageWithVision } = require('./translate')
 const { recognizeText, localOcrAvailable, ocrCapability, recognizeCloud, cloudOcrAvailable } = require('./ocr')
+const { translateImage } = require('./image')
 const tts = require('./tts')
 
 const isDev = process.env.NODE_ENV === 'development'
@@ -485,6 +486,79 @@ function registerIpc() {
       settings: state.settings,
       mode
     })
+  })
+
+  /* ---------------------------- 图片翻译 ---------------------------- */
+
+  ipcMain.handle('image:pick', async () => {
+    const r = await dialog.showOpenDialog(mainWindow, {
+      title: '选择要翻译的图片',
+      properties: ['openFile'],
+      filters: [{ name: '图片', extensions: ['png', 'jpg', 'jpeg', 'webp', 'bmp', 'gif'] }]
+    })
+    if (r.canceled || !r.filePaths || !r.filePaths.length) return null
+    const file = r.filePaths[0]
+    const mime =
+      {
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.webp': 'image/webp',
+        '.gif': 'image/gif',
+        '.bmp': 'image/bmp'
+      }[path.extname(file).toLowerCase()] || 'image/png'
+    if (fs.statSync(file).size > 24 * 1024 * 1024) throw new Error('图片太大（超过 24MB），换一张试试')
+    return {
+      dataUrl: `data:${mime};base64,${fs.readFileSync(file).toString('base64')}`,
+      name: path.basename(file)
+    }
+  })
+
+  ipcMain.handle('image:paste', () => {
+    const img = clipboard.readImage()
+    if (!img || img.isEmpty()) return null
+    return { dataUrl: img.toDataURL(), name: '剪贴板图片' }
+  })
+
+  ipcMain.handle('image:translate', async (event, { dataUrl, from, to } = {}) => {
+    const state = store.getState()
+    const settings = state.settings
+    if (!dataUrl) throw new Error('没有图片')
+    const result = await translateImage({
+      dataUrl,
+      from: from || settings.source,
+      to: to || settings.target,
+      settings,
+      onProgress: (message) => {
+        if (!event.sender.isDestroyed()) event.sender.send('image:progress', { message })
+      }
+    })
+    if (result.translated) {
+      store.addHistory({
+        source: 'image',
+        from: from || settings.source,
+        to: to || settings.target,
+        original: result.text,
+        translated: result.translated,
+        provider: result.provider
+      })
+      if (settings.autoCopy) clipboard.writeText(result.translated)
+      send(mainWindow, 'app:history-updated')
+    }
+    return result
+  })
+
+  // 截图浮窗里点「在图片翻译中打开」：把图带回主窗口继续操作
+  ipcMain.on('image:open-in-main', (_e, payload = {}) => {
+    showMainWindow()
+    const push = (attempt = 0) => {
+      if (mainWindow && mainWindow.webContents && !mainWindow.webContents.isLoading()) {
+        send(mainWindow, 'app:open-image', payload)
+      } else if (attempt < 20) {
+        setTimeout(() => push(attempt + 1), 120)
+      }
+    }
+    push()
   })
 
   ipcMain.handle('store:set-settings', (_e, patch) => {

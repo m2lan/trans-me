@@ -47,12 +47,40 @@ try {
     if ($null -eq $engine) { throw '系统未安装任何 OCR 语言包，请在“设置 → 时间和语言 → 语言”中添加语言功能' }
 
     $result = Await ($engine.RecognizeAsync($bitmap)) ([Windows.Media.Ocr.OcrResult])
-    $lines = @()
-    foreach ($line in $result.Lines) { $lines += $line.Text }
+    $imgW = [double]$decoder.PixelWidth
+    $imgH = [double]$decoder.PixelHeight
+    if ($imgW -le 0) { $imgW = 1 }
+    if ($imgH -le 0) { $imgH = 1 }
 
-    $payload = @{ lines = @(); text = ($lines -join "`n") }
+    $lines = @()
     foreach ($line in $result.Lines) {
-        $payload.lines += @{ text = $line.Text; confidence = 1.0 }
+        # 行框 = 该行所有词框的并集，再归一化到 0~1（左上角原点），供译文叠加使用
+        $x1 = [double]::MaxValue; $y1 = [double]::MaxValue
+        $x2 = -1.0; $y2 = -1.0
+        foreach ($word in $line.Words) {
+            $r = $word.BoundingRect
+            if ($r.X -lt $x1) { $x1 = $r.X }
+            if ($r.Y -lt $y1) { $y1 = $r.Y }
+            if (($r.X + $r.Width) -gt $x2) { $x2 = $r.X + $r.Width }
+            if (($r.Y + $r.Height) -gt $y2) { $y2 = $r.Y + $r.Height }
+        }
+        $box = $null
+        if ($x2 -gt 0 -and $y2 -gt 0) {
+            $box = @{
+                x = [Math]::Round($x1 / $imgW, 5)
+                y = [Math]::Round($y1 / $imgH, 5)
+                w = [Math]::Round(($x2 - $x1) / $imgW, 5)
+                h = [Math]::Round(($y2 - $y1) / $imgH, 5)
+            }
+        }
+        $lines += @{ text = $line.Text; box = $box; confidence = 1.0 }
+    }
+
+    $payload = @{
+        lines  = $lines
+        text   = (($lines | ForEach-Object { $_.text }) -join "`n")
+        width  = $imgW
+        height = $imgH
     }
     $payload | ConvertTo-Json -Depth 5 -Compress
 }
