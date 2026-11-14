@@ -1,0 +1,11 @@
+node_modules/
+dist/
+release/
+.tmp/
+.build/
+.DS_Store
+*.log
+
+# 本机记忆/临时数据
+.workbuddy/
+probe*.txt

@@ -1,0 +1,24 @@
+{
+  "name": "trans-me",
+  "productName": "TransMe",
+  "version": "1.1.0",
+  "description": "轻量桌面翻译工具 · 文本 / 截图 / 划词，中英日韩泰互译",
+  "main": "electron/main.js",
+  "author": "TransMe",
+  "license": "MIT",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "build:renderer": "node scripts/build.js",
+    "start": "node scripts/build.js && electron .",
+    "build": "node scripts/build.js --min && electron-builder",
+    "build:mac": "node scripts/build.js --min && electron-builder --mac",
+    "build:win": "node scripts/build.js --min && electron-builder --win",
+    "pack:mac": "node scripts/pack-mac.js",
+    "icon": "node scripts/make-icon.js"
+  },
+  "devDependencies": {
+    "electron": "^33.3.1",
+    "electron-builder": "^25.1.8",
+    "esbuild": "^0.21.5"
+  }
+}

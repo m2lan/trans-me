@@ -1,0 +1,41 @@
+appId: com.transme.app
+productName: TransMe
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - electron/**/*
+  - native/**/*
+  - package.json
+asar: true
+asarUnpack:
+  - native/**
+mac:
+  category: public.app-category.productivity
+  identity: null
+  target:
+    - target: dmg
+      arch:
+        - x64
+        - arm64
+  extendInfo:
+    NSHumanReadableCopyright: TransMe
+    NSScreenCaptureUsageDescription: TransMe 需要读取屏幕内容，用于截图翻译。
+    NSAppleEventsUsageDescription: TransMe 通过系统脚本调用内置 OCR 引擎识别截图文字。
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: ${productName}-${version}-setup.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: TransMe
+linux:
+  target:
+    - AppImage
+  category: Utility
