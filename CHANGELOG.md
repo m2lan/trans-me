@@ -1,6 +1,6 @@
 # 更新日志
 
-## [Unreleased]
+## [1.3.2] - 2026-11-15
 
 ### 修复
 
@@ -96,6 +96,8 @@
 - 全局快捷键、托盘、深色界面、设置面板
 - macOS 打包流程与 dmg 产物
 
+[1.3.2]: https://github.com/m2lan/trans-me/compare/v1.3.1...v1.3.2
+[1.3.2]: https://github.com/m2lan/trans-me/compare/v1.3.1...v1.3.2
 [1.3.0]: https://github.com/m2lan/trans-me/compare/v1.2.0...v1.3.0
 [1.3.1]: https://github.com/m2lan/trans-me/compare/v1.3.0...v1.3.1
 [1.3.1]: https://github.com/m2lan/trans-me/compare/v1.3.0...v1.3.1
