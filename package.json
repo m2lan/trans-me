@@ -1,7 +1,7 @@
 {
   "name": "trans-me",
   "productName": "TransMe",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "轻量桌面翻译工具 · 截图即译 / 划词即译，中英日韩泰互译，支持 macOS / Windows",
   "main": "electron/main.js",
   "author": "m2lan",

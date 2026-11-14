@@ -2,6 +2,22 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.3.1] - 2026-11-15
+
+### 修复
+
+- **点菜单栏图标会把桌面切回主屏**：面板窗口改为 macOS NSPanel（`type: 'panel'`，带 nonactivating 掩码），并用 `showInactive()` 显示
+  —— 面板浮起时不再激活本应用，系统就不会切到主窗口所在的屏幕/桌面；面板依然是 key window，可以直接打字
+- `setVisibleOnAllWorkspaces` 增加 `skipTransformProcessType: true`，避免 Electron 把进程转成 UIElement 导致 Dock 图标消失
+
+## [1.3.1] - 2026-11-15
+
+### 修复
+
+- **点菜单栏图标会把桌面切回主屏**：面板窗口改为 macOS NSPanel（`type: 'panel'`，带 nonactivating 掩码），并用 `showInactive()` 显示
+  —— 面板浮起时不再激活本应用，系统就不会切到主窗口所在的屏幕/桌面；面板依然是 key window，可以直接打字
+- `setVisibleOnAllWorkspaces` 增加 `skipTransformProcessType: true`，避免 Electron 把进程转成 UIElement 导致 Dock 图标消失
+
 ## [1.3.0] - 2026-11-15
 
 ### 新增
@@ -69,6 +85,8 @@
 - macOS 打包流程与 dmg 产物
 
 [1.3.0]: https://github.com/m2lan/trans-me/compare/v1.2.0...v1.3.0
+[1.3.1]: https://github.com/m2lan/trans-me/compare/v1.3.0...v1.3.1
+[1.3.1]: https://github.com/m2lan/trans-me/compare/v1.3.0...v1.3.1
 [1.2.0]: https://github.com/m2lan/trans-me/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/m2lan/trans-me/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/m2lan/trans-me/releases/tag/v1.0.0

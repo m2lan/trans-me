@@ -176,6 +176,10 @@ function createTrayWindow() {
     skipTaskbar: true,
     alwaysOnTop: true,
     hasShadow: false,
+    // macOS 关键项：panel = NSPanel + NSWindowStyleMaskNonactivatingPanel，
+    // 窗口浮起时不激活本应用，系统就不会把桌面切回主窗口所在的 Space。
+    // 日志里那行 "NSWindow does not support nonactivating panel styleMask 0x80" 是系统噪音，不影响行为。
+    type: mac ? 'panel' : undefined,
     webPreferences: {
       preload: PRELOAD,
       contextIsolation: true,
@@ -184,7 +188,14 @@ function createTrayWindow() {
   })
 
   trayWindow.setAlwaysOnTop(true, 'pop-up-menu')
-  if (mac) trayWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  if (mac) {
+    // skipTransformProcessType：否则 Electron 会把整个进程转成 UIElement（Dock 图标消失）。
+    // 光靠 canJoinAllSpaces 就能在「当前这块屏的当前桌面」上显示。
+    trayWindow.setVisibleOnAllWorkspaces(true, {
+      visibleOnFullScreen: true,
+      skipTransformProcessType: true
+    })
+  }
 
   loadView(trayWindow, 'tray.html')
 
@@ -221,8 +232,11 @@ function positionTrayWindow() {
 function showTrayWindow() {
   if (!trayWindow || trayWindow.isDestroyed()) createTrayWindow()
   positionTrayWindow()
-  trayWindow.show()
+  // showInactive：只把窗口排到前面，不激活应用 → 不会把用户从当前屏幕/桌面拽走
+  trayWindow.showInactive()
+  // 再让这个 panel 成为 key window，输入框才能直接吃键盘（panel 不会因此激活应用）
   trayWindow.focus()
+  trayWindow.webContents.focus()
   send(trayWindow, 'tray:shown')
 }
 
