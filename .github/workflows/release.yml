@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: 打包 ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-13
+            label: macOS x64
+            target: mac
+          - os: macos-14
+            label: macOS arm64
+            target: mac
+          - os: windows-latest
+            label: Windows x64
+            target: win
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 安装依赖
+        run: npm install --no-audit --no-fund
+
+      # macOS：用脚本自己组装 .app + dmg（不依赖 electron-builder 的 app-builder 二进制）
+      - name: 构建 macOS 安装包
+        if: matrix.target == 'mac'
+        run: node scripts/pack-mac.js
+
+      - name: 构建 Windows 安装包
+        if: matrix.target == 'win'
+        run: npm run build:win -- --publish never
+
+      - name: 列出产物
+        shell: bash
+        run: ls -lh release/ || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.label }}
+          path: |
+            release/*.dmg
+            release/*.exe
+          if-no-files-found: error
+
+  publish:
+    name: 发布到 Releases
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: 检查产物
+        run: ls -lh artifacts
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            下载对应平台的安装包：macOS 选 `.dmg`（Intel 用 x64，Apple Silicon 用 arm64），Windows 选 `setup.exe`。
+
+            macOS 版本未做 Apple 公证，首次打开如提示「无法验证开发者」，请右键 → 打开。
+            首次使用截图翻译需要在「系统设置 → 隐私与安全性 → 屏幕录制」里授权，并重启应用。

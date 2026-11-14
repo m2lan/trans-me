@@ -2,10 +2,43 @@
   "name": "trans-me",
   "productName": "TransMe",
   "version": "1.1.0",
-  "description": "轻量桌面翻译工具 · 文本 / 截图 / 划词，中英日韩泰互译",
+  "description": "轻量桌面翻译工具 · 截图即译 / 划词即译，中英日韩泰互译，支持 macOS / Windows",
   "main": "electron/main.js",
-  "author": "TransMe",
+  "author": "m2lan",
   "license": "MIT",
+  "homepage": "https://github.com/m2lan/trans-me#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m2lan/trans-me.git"
+  },
+  "bugs": {
+    "url": "https://github.com/m2lan/trans-me/issues"
+  },
+  "keywords": [
+    "translation",
+    "translator",
+    "screen-translation",
+    "screenshot-translation",
+    "image-translation",
+    "ocr",
+    "clipboard-translation",
+    "electron",
+    "desktop-app",
+    "vue3",
+    "macos",
+    "windows",
+    "chinese",
+    "japanese",
+    "korean",
+    "thai",
+    "deepseek",
+    "openai",
+    "tts",
+    "offline-ocr"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "node scripts/dev.js",
     "build:renderer": "node scripts/build.js",
@@ -14,7 +47,8 @@
     "build:mac": "node scripts/build.js --min && electron-builder --mac",
     "build:win": "node scripts/build.js --min && electron-builder --win",
     "pack:mac": "node scripts/pack-mac.js",
-    "icon": "node scripts/make-icon.js"
+    "icon": "node scripts/make-icon.js",
+    "social": "node scripts/make-social.js"
   },
   "devDependencies": {
     "electron": "^33.3.1",

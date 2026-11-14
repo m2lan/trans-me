@@ -1,0 +1,107 @@
+name: 🐞 问题反馈
+description: 翻译出错、截图识别异常、界面卡死、安装失败等
+title: '[Bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请尽量把环境与复现步骤写清楚，这样能省掉一轮来回确认。
+
+  - type: checkboxes
+    id: searched
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 已搜索过现有 issue，没有重复
+          required: true
+        - label: 已阅读 README 的「常见问题」与「已知限制」
+          required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: TransMe 版本
+      description: 设置面板底部，或安装包文件名
+      placeholder: 1.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 系统
+      options:
+        - macOS 15 (Sequoia)
+        - macOS 14 (Sonoma)
+        - macOS 13 (Ventura)
+        - macOS 12 (Monterey)
+        - Windows 11
+        - Windows 10
+        - 其他（请在补充说明里写清）
+    validations:
+      required: true
+
+  - type: dropdown
+    id: channel
+    attributes:
+      label: 翻译通道
+      options:
+        - 自动（默认）
+        - 仅免费接口
+        - 仅大模型（DeepSeek / OpenAI 兼容）
+        - 不确定
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ocr
+    attributes:
+      label: 截图识别通道（文本翻译问题可选「不涉及」）
+      options:
+        - 云端 OCR（DeepSeek）
+        - 视觉模型直译
+        - 本地离线 OCR
+        - 不涉及（文本 / 剪贴板翻译）
+        - 不确定
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 越具体越好，比如「在 XX 网页按 ⌘⇧T 框选三行英文，浮窗显示空白」
+      placeholder: |
+        1. 打开 ...
+        2. 按 ...
+        3. 看到 ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期行为 / 实际行为
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 截图或日志
+      description: |
+        界面截图直接拖进来即可。日志获取方式：
+        - macOS：终端执行 `/Applications/TransMe.app/Contents/MacOS/TransMe`，复现后把输出贴上来
+        - Windows：`%LOCALAPPDATA%\TransMe` 下的日志文件
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: 补充说明
+      description: 显示器数量、是否多屏、是否开了代理、快捷键是否被占用等
+    validations:
+      required: false

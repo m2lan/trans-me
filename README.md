@@ -1,25 +1,61 @@
+<div align="center">
+
 # TransMe
 
-轻量桌面翻译工具，macOS / Windows 同一套代码。中英日韩泰互译，主打**截图即译**，不用再打开网页。
+**截图即译 · 划词即译 · 中英日韩泰互译** — macOS / Windows 桌面翻译工具，不用再打开网页
 
-![主界面](docs/translate.png)
-
-<p align="center">
-  <img src="docs/popup.png" width="46%" alt="截图翻译结果浮窗" />
-  <img src="docs/overlay.png" width="46%" alt="框选遮罩" />
+<p>
+  <img alt="platform" src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-2f6bf0?style=flat-square">
+  <img alt="electron" src="https://img.shields.io/badge/Electron-33-47848f?style=flat-square&logo=electron&logoColor=white">
+  <img alt="vue" src="https://img.shields.io/badge/Vue-3-42b883?style=flat-square&logo=vue.js&logoColor=white">
+  <img alt="license" src="https://img.shields.io/badge/license-MIT-3c9?style=flat-square">
+  <img alt="release" src="https://img.shields.io/github/v/release/m2lan/trans-me?style=flat-square&color=2f6bf0">
+  <img alt="stars" src="https://img.shields.io/github/stars/m2lan/trans-me?style=flat-square&color=2f6bf0">
+  <img alt="last commit" src="https://img.shields.io/github/last-commit/m2lan/trans-me?style=flat-square&color=888">
 </p>
+
+<img src="docs/social-preview.jpg" alt="TransMe 截图翻译" width="100%">
+
+</div>
+
+---
+
+## 为什么又一个翻译工具
+
+网页翻译每次都要切浏览器、粘贴、等广告；装过的客户端要么收费、要么只做文本不做截图，要么把「截图翻译」做成付费会员功能。
+
+TransMe 想解决的就三件事：
+
+- **不离开当前窗口** —— 全屏框选任意位置（网页、PDF、视频字幕、游戏、图片、报错弹窗），识别 + 翻译一条快捷键搞定
+- **开箱即用** —— 不填任何 API Key 也能用，内置免费通道；想更准再挂自己的大模型
+- **不联网也能干活** —— 中英截图走系统自带的离线 OCR，不耗 token、不上传图片
 
 ## 功能
 
 | 能力 | 说明 |
 | --- | --- |
-| 文本翻译 | 左侧输入即自动翻译（可关），支持中 / 英 / 日 / 韩 / 泰，自动识别源语言 |
-| 截图翻译 | 全局快捷键 → 全屏框选 → 识别文字 → 浮窗出译文 |
-| 划词 / 剪贴板翻译 | 复制任意文本后按快捷键，直接在主窗口出译文 |
-| 历史与收藏 | 本地保存最近 300 条，可搜索、收藏、一键回填 |
-| 朗读 | 调用系统 TTS 朗读原文 / 译文 |
-| 双通道引擎 | 内置免费通道开箱即用；填 API Key 后自动优先大模型（推荐 `deepseek-flash`） |
-| 三通道 OCR | 云端 OCR → 视觉模型 → 本地离线，逐级降级 |
+| **截图翻译** | 全局快捷键 → 全屏框选 → OCR 识别 → 浮窗出译文，原文译文对照、一键复制 |
+| **划词 / 剪贴板翻译** | 复制任意文本后按快捷键，主窗口直接出译文 |
+| **文本翻译** | 左侧输入即自动翻译（可关），支持中 / 英 / 日 / 韩 / 泰，自动识别源语言 |
+| **历史与收藏** | 本地保存最近 300 条，可搜索、可收藏、一键回填 |
+| **朗读** | 调用系统 TTS 朗读原文 / 译文 |
+| **双通道翻译** | 内置免费通道开箱即用；填 API Key 后自动优先大模型（推荐 `deepseek-flash`） |
+| **三通道 OCR** | 云端 OCR → 视觉模型直译 → 本地离线 OCR，逐级降级，日 / 韩 / 泰 截图也能识别 |
+| **纯本地存储** | 历史与设置只写本机 `userData`，无账号、无云端同步、无埋点 |
+
+<p align="center">
+  <img src="docs/translate.png" alt="文本翻译主界面" width="88%">
+</p>
+
+<p align="center">
+  <img src="docs/popup.png" width="46%" alt="截图翻译结果浮窗">
+  <img src="docs/overlay.png" width="46%" alt="全屏框选遮罩">
+</p>
+
+<p align="center">
+  <img src="docs/history.png" width="46%" alt="历史记录与收藏">
+  <img src="docs/settings.png" width="46%" alt="设置面板">
+</p>
 
 ## 快捷键
 
@@ -30,16 +66,29 @@
 | 显示 / 隐藏主窗口 | `⌘ ⇧ Space` | `Ctrl Shift Space` |
 | 立即翻译 | `⌘ Enter` | `Ctrl Enter` |
 
-快捷键被其他软件占用时注册会失败，设置面板会提示。
+快捷键被其他软件占用时注册会失败，设置面板会明确提示。
+
+## 下载安装
+
+| 平台 | 安装方式 |
+| --- | --- |
+| macOS | 到 [Releases](https://github.com/m2lan/trans-me/releases) 下载 `TransMe-1.1.0-x64.dmg`，双击挂载后拖进「应用程序」 |
+| Windows | 仓库暂未提供预编译包，按下方「打包」自行执行 `npm run build:win` 生成安装程序 |
+
+macOS 版本未做 Apple 公证，首次打开若提示「无法验证开发者」，右键 → 打开，或在「系统设置 → 隐私与安全性」里点「仍要打开」。
+
+首次使用截图翻译，系统会申请**屏幕录制**权限：系统设置 → 隐私与安全性 → 屏幕录制 → 勾选 TransMe → **重启应用**（系统限制，必须重启才生效）。
 
 ## 快速开始
 
+需要 Node.js 18+。
+
 ```bash
+git clone https://github.com/m2lan/trans-me.git
+cd trans-me
 npm install        # 安装 electron / electron-builder / esbuild
 npm run dev        # 构建渲染层并启动应用
 ```
-
-首次使用截图翻译，macOS 会申请「屏幕录制」权限：系统设置 → 隐私与安全性 → 屏幕录制 → 勾选 TransMe → 重启应用。
 
 ## 打包
 
@@ -52,13 +101,11 @@ npm run build:mac   # 生成 release/TransMe-1.1.0.dmg（x64 + arm64）
 npm run build:win   # 生成 release/TransMe-1.1.0-setup.exe
 ```
 
-`scripts/pack-mac.js` 直接用 Electron 发行版组装：复制运行时 → 改 Info.plist 与辅助进程名 → 写入应用代码 → ad-hoc 签名 → `hdiutil` 出 dmg。产物不带 quarantine 属性，双击即可运行，不需要在「隐私与安全性」里额外放行。
+`scripts/pack-mac.js` 直接用 Electron 发行版组装：复制运行时 → 改 Info.plist 与辅助进程名 → 写入应用代码 → ad-hoc 签名 → `hdiutil` 出 dmg。产物不带 quarantine 属性，双击即可运行。
 
-图标由 `npm run icon` 生成（AppKit 绘制 → `build/icon.icns`）。
+图标由 `npm run icon` 生成（AppKit 绘制 → `build/icon.icns`），社交预览图由 `npm run social` 生成。
 
-跨平台构建说明：Windows 安装包建议在 Windows 上执行 `npm run build:win`；在 macOS 上交叉构建 Windows 包需要额外安装 wine，稳定性一般。
-
-打包配置见 `electron-builder.yml`（`identity: null` 表示不签名，本地自用足够；分发给他人的话建议自行签名/公证）。
+Windows 安装包建议在 Windows 上执行 `npm run build:win`；在 macOS 上交叉构建需要额外安装 wine，稳定性一般。打包配置见 `electron-builder.yml`（`identity: null` 表示不签名，分发给他人的话建议自行签名 / 公证）。
 
 ## 翻译通道
 
@@ -97,7 +144,7 @@ API Key   sk-xxxx
 
 按优先级自动降级，设置里可分别开关：
 
-<img src="docs/ocr.png" width="72%" alt="截图识别的三条通道" />
+<img src="docs/ocr.png" width="72%" alt="截图识别的三条通道">
 
 1. **云端 OCR（优先）**：走 DeepSeek `POST /v1/tools/ocr`，先识别文字再翻译。中英日韩泰全覆盖，按页计费 **1.5 元/千页**（一张截图 0.0015 元）。仅当 API 地址是 DeepSeek 且填了 Key 时启用。
 2. **视觉模型直译**（备用）：截图直接交给视觉模型，返回原文 + 译文，排版与语义最好。
@@ -136,10 +183,73 @@ native/
 scripts/
   build.js         esbuild 打包渲染层
   dev.js           构建 + 启动 Electron
+  pack-mac.js      组装 .app 并出 dmg
+test/              探针与端到端校验脚本（CDP 驱动真实应用）
 ```
+
+## 常见问题
+
+<details>
+<summary><b>截图翻译没反应 / 黑屏？</b></summary>
+
+macOS 需要在「隐私与安全性 → 屏幕录制」里授权并**重启应用**。多显示器时截图只覆盖鼠标所在那块屏幕，先把鼠标移到目标屏再按快捷键。
+</details>
+
+<details>
+<summary><b>免费通道偶发失败？</b></summary>
+
+免费通道依赖第三方公开接口，服务端改版时会短时失效，下次会自动切下一条。长期高频使用建议在设置里填自己的 API Key。
+</details>
+
+<details>
+<summary><b>不填 Key 能识别日 / 韩 / 泰截图吗？</b></summary>
+
+取决于系统：macOS 14+ 与 Windows（装有对应语言包）可以用本地 OCR；macOS 12/13 的系统 Vision 只有中英文，需要开云端 OCR 或视觉模型。
+</details>
+
+<details>
+<summary><b>支持 Linux 吗？</b></summary>
+
+代码上窗口与快捷键是跨平台的，截图与 OCR 依赖平台能力（macOS Vision / Windows WinRT）。Linux 需要另接截图与 OCR 后端，目前未适配。
+</details>
+
+<details>
+<summary><b>会把我翻译的内容上传到哪里？</b></summary>
+
+历史与设置只存本机。文本会发给你选择的翻译通道（免费接口或你自己配置的大模型）；中英截图走本地 OCR 时不发图，只有开启云端 OCR / 视觉模型才会把截图传给对应服务商。
+</details>
+
+<details>
+<summary><b>支持划词即译（选中文本直接出译文）吗？</b></summary>
+
+当前是「复制后按快捷键」，不监听鼠标选区（避免常驻钩子影响其他应用）。需要的话可以提 issue。
+</details>
 
 ## 已知限制
 
 - 截图只覆盖鼠标所在的那块屏幕，多显示器需要移动鼠标到目标屏再按快捷键。
 - 免费通道依赖第三方接口，服务端改版时可能短时失效，不影响大模型通道。
 - 未做术语库 / 文档翻译（PDF 整篇），当前定位是「随手翻译」。
+- 未接入 OCR 之外的版式还原（表格、公式会按纯文本顺序输出）。
+
+## 参与贡献
+
+欢迎 issue 与 PR，提交前请先看 [CONTRIBUTING.md](CONTRIBUTING.md)。版本变更见 [CHANGELOG.md](CHANGELOG.md)。
+
+如果这个工具帮你省了时间，点个 ⭐ 是最直接的鼓励。
+
+## License
+
+[MIT](LICENSE) © 2026 m2lan
+
+---
+
+<div align="center">
+
+### English
+
+**TransMe** is a lightweight desktop translator for macOS and Windows. Press a shortcut, drag over anything on screen — web pages, PDFs, subtitles, images, error dialogs — and get the translation in a floating window. Text translation via clipboard or typing, Chinese / English / Japanese / Korean / Thai, with offline OCR (macOS Vision, Windows.Media.Ocr) and optional cloud OCR or any OpenAI-compatible LLM. Built with Electron + Vue 3, no account, everything stored locally.
+
+*Keywords: screen translation, screenshot translator, image translator, OCR translation, clip text translator, deepseek translator, offline OCR.*
+
+</div>

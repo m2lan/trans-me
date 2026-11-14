@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: 构建校验（${{ matrix.os }}）
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-14, windows-latest]
+
+    env:
+      # CI 只构建渲染层，不需要下载 Electron 二进制，省 100MB+ 与时间
+      ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 安装依赖
+        run: npm install --no-audit --no-fund
+
+      - name: 语法检查
+        shell: bash
+        run: |
+          set -e
+          for f in electron/*.js native/*.js scripts/*.js src/*.js src/components/*.js; do
+            node --check "$f"
+          done
+          echo "全部文件语法通过"
+
+      - name: 构建渲染层
+        run: node scripts/build.js --min
+
+      - name: 校验产物
+        shell: bash
+        run: |
+          set -e
+          for f in dist/index.html dist/overlay.html dist/popup.html dist/assets/app.js dist/assets/overlay.js dist/assets/popup.js; do
+            test -f "$f" || { echo "缺少产物 $f"; exit 1; }
+          done
+          echo "产物齐全：$(ls dist/assets | tr '\n' ' ')"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: renderer-${{ matrix.os }}
+          path: dist
+          retention-days: 7

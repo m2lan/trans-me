@@ -14,9 +14,24 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const ROOT = path.join(__dirname, '..')
-const ELECTRON_APP =
-  process.env.ELECTRON_APP ||
-  '/Users/M2/Documents/ai/global-project/baton/node_modules/electron/dist/Electron.app'
+
+/** Electron 发行版位置：优先环境变量，其次本项目 node_modules，最后回退到开发机上的公共副本 */
+function resolveElectronApp() {
+  const candidates = [
+    process.env.ELECTRON_APP,
+    path.join(ROOT, 'node_modules', 'electron', 'dist', 'Electron.app'),
+    '/Users/M2/Documents/ai/global-project/baton/node_modules/electron/dist/Electron.app'
+  ].filter(Boolean)
+  for (const p of candidates) {
+    if (fs.existsSync(p)) return p
+  }
+  throw new Error(
+    '找不到 Electron 运行时，请先 npm install，或用 ELECTRON_APP=/path/to/Electron.app 指定'
+  )
+}
+
+const ELECTRON_APP = resolveElectronApp()
+const ARCH = process.arch === 'arm64' ? 'arm64' : 'x64'
 const RELEASE = path.join(ROOT, 'release')
 const APP = path.join(RELEASE, 'mac', 'TransMe.app')
 const ICNS = path.join(ROOT, 'build', 'icon.icns')
@@ -186,7 +201,7 @@ function makeDmg() {
   }
 
   const volName = `${APP_NAME} ${VERSION}`
-  const dmg = path.join(RELEASE, `${APP_NAME}-${VERSION}-x64.dmg`)
+  const dmg = path.join(RELEASE, `${APP_NAME}-${VERSION}-${ARCH}.dmg`)
   rmrf(dmg)
   log('打包 dmg →', dmg)
   run('hdiutil', [

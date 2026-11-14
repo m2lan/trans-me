@@ -1,0 +1,55 @@
+name: ✨ 功能建议
+description: 想要的新能力、体验改进、新的翻译 / 识别通道
+title: '[Feature] '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        说清「你想解决什么问题」比「你想加什么按钮」更有用 —— 有时现成功能就能解决，只是入口不明显。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你遇到什么问题
+      description: 描述具体场景，不要只写功能名
+      placeholder: 看英文技术视频时，字幕一闪就没了，框选来不及，想要暂停后直接框选
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 你希望的解决方式
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 你试过的替代方案
+      description: 其他软件怎么做的、现有功能为什么不够用
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: 这个需求大概属于
+      options:
+        - 截图 / OCR 相关
+        - 翻译质量 / 新通道
+        - 界面与交互
+        - 快捷键与系统集成
+        - 打包与安装
+        - 其他
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: 是否愿意自己实现
+      options:
+        - label: 愿意提 PR（我可以先给出思路和涉及的文件）
+          required: false

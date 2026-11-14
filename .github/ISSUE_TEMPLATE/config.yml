@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: 💬 使用问题 / 随便聊
+    url: https://github.com/m2lan/trans-me/discussions
+    about: 配置怎么填、某个通道好不好用、想要什么功能，都可以在 Discussions 里讨论
+  - name: 📖 先看 README
+    url: https://github.com/m2lan/trans-me#readme
+    about: 安装、快捷键、翻译通道、OCR 能力差异、常见问题都在这里
