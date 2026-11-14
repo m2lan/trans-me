@@ -9,6 +9,7 @@
   <img alt="electron" src="https://img.shields.io/badge/Electron-33-47848f?style=flat-square&logo=electron&logoColor=white">
   <img alt="vue" src="https://img.shields.io/badge/Vue-3-42b883?style=flat-square&logo=vue.js&logoColor=white">
   <img alt="license" src="https://img.shields.io/badge/license-MIT-3c9?style=flat-square">
+  <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/m2lan/trans-me/ci.yml?style=flat-square&label=CI">
   <img alt="release" src="https://img.shields.io/github/v/release/m2lan/trans-me?style=flat-square&color=2f6bf0">
   <img alt="stars" src="https://img.shields.io/github/stars/m2lan/trans-me?style=flat-square&color=2f6bf0">
   <img alt="last commit" src="https://img.shields.io/github/last-commit/m2lan/trans-me?style=flat-square&color=888">

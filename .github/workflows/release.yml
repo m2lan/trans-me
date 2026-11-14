@@ -16,13 +16,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-13
-            label: macOS x64
-            target: mac
-          # arm64 用 electron-builder 在 x64 机器上交叉打包，失败也不阻塞发布
-          - os: macos-13
+          # 现在免费的标准 macOS 运行器只有 arm64（macos-15），x64 由 electron-builder 交叉打包
+          - os: macos-15
             label: macOS arm64
-            target: mac-arm
+            target: mac
+          - os: macos-15
+            label: macOS x64
+            target: mac-x64
             experimental: true
           - os: windows-latest
             label: Windows x64
@@ -40,13 +40,13 @@ jobs:
         run: npm install --no-audit --no-fund
 
       # macOS：用脚本自己组装 .app + dmg（不依赖 electron-builder 的 app-builder 二进制）
-      - name: 构建 macOS x64 安装包
+      - name: 构建 macOS 安装包（当前架构，脚本组装）
         if: matrix.target == 'mac'
         run: node scripts/pack-mac.js
 
-      - name: 构建 macOS arm64 安装包（交叉打包）
-        if: matrix.target == 'mac-arm'
-        run: npm run build:mac -- --arm64 --publish never
+      - name: 构建 macOS x64 安装包（交叉打包）
+        if: matrix.target == 'mac-x64'
+        run: npm run build:mac -- --x64 --publish never
 
       - name: 构建 Windows 安装包
         if: matrix.target == 'win'
