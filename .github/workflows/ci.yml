@@ -53,7 +53,7 @@ jobs:
           done
           echo "产物齐全：$(ls dist/assets | tr '\n' ' ')"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: renderer-${{ matrix.os }}
           path: dist

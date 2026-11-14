@@ -13,6 +13,7 @@ asarUnpack:
   - native/**
 mac:
   category: public.app-category.productivity
+  artifactName: ${productName}-${version}-${arch}.${ext}
   identity: null
   target:
     - target: dmg
