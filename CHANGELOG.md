@@ -1,5 +1,17 @@
 # 更新日志
 
+## [Unreleased]
+
+### 修复
+
+- 文本输入框底部多出 4px，输入两行就会出现一条多余滚动条（`textarea` 默认 inline 基线留白）
+
+### 文档
+
+- README 与截图按 1.3.x 界面重做：补菜单栏、图片翻译、截图浮窗（含「大图」）的真实截图
+- 下载章节改为按平台列出三个安装包；OCR 章节补上两条链路降级顺序的差异
+
+
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
 ## [1.3.1] - 2026-11-15

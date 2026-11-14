@@ -49,11 +49,18 @@ export default defineComponent({
       const idx = segments.value.indexOf(seg)
       const fitted = idx >= 0 ? fitSizes.value[idx] : 0
       const fontSize = fitted || Math.min(36, Math.max(9, seg.box.h * renderedH.value * 0.6))
+      // 比识别框略微放大 1~2px，盖住原文字的描边余量
+      const padX = 1.5 / Math.max(1, boxSize.value.w)
+      const padY = 1 / Math.max(1, boxSize.value.h)
+      const x = Math.max(0, seg.box.x - padX)
+      const y = Math.max(0, seg.box.y - padY)
+      const w = Math.min(1 - x, seg.box.w + padX * 2)
+      const h = Math.min(1 - y, seg.box.h + padY * 2)
       return {
-        left: pct(seg.box.x),
-        top: pct(seg.box.y),
-        width: pct(seg.box.w),
-        height: pct(seg.box.h),
+        left: pct(x),
+        top: pct(y),
+        width: pct(w),
+        height: pct(h),
         fontSize: `${fontSize.toFixed(1)}px`
       }
     }

@@ -337,6 +337,7 @@ titlebar,
 }
 
 textarea.editor {
+  display: block;
   width: 100%;
   height: 100%;
   border: none;
@@ -1027,7 +1028,7 @@ textarea.editor::placeholder {
   align-items: center;
   justify-content: flex-start;
   padding: 0 3px;
-  background: rgba(255, 255, 255, 0.95);
+  background: #fff;
   color: #12151a;
   border-radius: 2px;
   overflow: hidden;

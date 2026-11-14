@@ -782,6 +782,13 @@ function registerIpc() {
 
   ipcMain.on('tray:hide', () => hideTrayWindow())
   if (isDev) ipcMain.on('tray:debug-show', () => showTrayWindow())
+  // 开发期：把一张图直接送进图片翻译页（用于生成文档截图）
+  if (isDev) {
+    ipcMain.on('image:debug-open', (_e, dataUrl) => {
+      showMainWindow()
+      send(mainWindow, 'app:open-image', { dataUrl, nonce: Date.now() })
+    })
+  }
   ipcMain.on('tray:open-main', () => showMainWindow())
   ipcMain.on('tray:resize', (_e, h) => {
     if (!trayWindow || trayWindow.isDestroyed()) return

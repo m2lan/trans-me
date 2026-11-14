@@ -58,15 +58,15 @@ draw('译', $.NSFont.fontWithNameSize('PingFang SC', S * 0.55),
   $.NSColor.whiteColor, ix + S * 0.20, iy + S * 0.17)
 
 // 文案
-const tx = ix + S + 56
-draw('TransMe', $.NSFont.boldSystemFontOfSize(84), $.NSColor.whiteColor, tx, 360)
-draw('截图即译，划词即译', $.NSFont.fontWithNameSize('PingFang SC', 42),
+const tx = ix + S + 52
+draw('TransMe', $.NSFont.boldSystemFontOfSize(80), $.NSColor.whiteColor, tx, 360)
+draw('截图即译 · 贴图即译 · 菜单栏随手翻', $.NSFont.fontWithNameSize('PingFang SC', 34),
   $.NSColor.colorWithCalibratedRedGreenBlueAlpha(0.88, 0.92, 1.0, 1), tx, 286)
 draw('中 / 英 / 日 / 韩 / 泰   ·   macOS & Windows', $.NSFont.fontWithNameSize('PingFang SC', 26),
   $.NSColor.colorWithCalibratedRedGreenBlueAlpha(0.62, 0.70, 0.86, 1), tx, 238)
 
 // 底部标签
-const tags = ['Electron', 'Vue 3', 'OCR', 'DeepSeek']
+const tags = ['菜单栏', '图片翻译', 'OCR', 'DeepSeek']
 const chipFont = $.NSFont.fontWithNameSize('PingFang SC', 22)
 let cx = tx
 for (const t of tags) {

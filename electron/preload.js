@@ -65,6 +65,9 @@ contextBridge.exposeInMainWorld('api', {
     onShown: subscribe('tray:shown')
   },
   onOpenSettings: subscribe('app:open-settings'),
+  ...(process.env.NODE_ENV === 'development'
+    ? { imageDebugOpen: (dataUrl) => ipcRenderer.send('image:debug-open', dataUrl) }
+    : {}),
 
   window: {
     minimize: () => ipcRenderer.send('window:minimize'),
